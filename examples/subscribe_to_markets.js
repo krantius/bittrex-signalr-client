@@ -1,5 +1,6 @@
 "use strict";
 const util = require('util');
+const WebSocket = require('ws');
 const SignalRClient = require('../lib/client.js');
 let client = new SignalRClient({
     // websocket will be automatically reconnected if server does not respond to ping after 10s
@@ -13,15 +14,25 @@ let client = new SignalRClient({
     }
 });
 
+const ws = new WebSocket('ws://localhost:8080/ws')
+
+ws.on('open', function open() {
+    ws.send('hello')
+})
+
+ws.on('message', function incoming(data) {
+    console.log(data)
+})
+
 //-- event handlers
 client.on('orderBook', function(data){
     console.log(util.format("Got full order book for pair '%s' : cseq = %d", data.pair, data.cseq));
 });
 client.on('orderBookUpdate', function(data){
-    console.log(util.format("Got order book update for pair '%s' : cseq = %d", data.pair, data.cseq));
+    console.log(util.inspect(data, false, null));
 });
 client.on('trades', function(data){
-    console.log(util.format("Got trades for pair '%s'", data.pair));
+  //  console.log(util.inspect(data, false, null));
 });
 
 //-- start subscription
